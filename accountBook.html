@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Book</title>
+    <link rel="shortcut icon" type="image/x-icon" href="SO.png">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <p class="my-header">총 지출금액: {{sum}}</p>
+        <input type="text" v-model.trim="addText" placeholder="내용" id="cont">
+        <input type="text" v-model.number="addPrice" v-on:keyup.enter="addList" placeholder="금액">
+        <button v-on:click="addList">추가</button>
+        <br><br>
+        <div v-for="(item, index) in myArray">
+            <ul>
+                <li>내용은 {{item.content}}이고, 금액은 {{item.price}}입니다.
+                <button v-on:click="removeList(index)">삭제</button></li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                totalPrice: 0,
+                addText:'',
+                addPrice:0,
+                myArray:[
+                    {
+                        "content":"계란한판",
+                        "price":4000
+                    },
+                    {
+                        "content":"오징어",
+                        "price":9000
+                    },
+                    {
+                        "content":"당근1개",
+                        "price":450
+                    },
+                ]
+            },
+            computed:{
+                sum: function(){
+                    var s = 0;
+                    for(var i=0; i<this.myArray.length; i++){
+                        s += this.myArray[i].price;
+                    }
+                    return s;
+                }
+            },
+            methods:{
+                addList: function(){
+                    if(isNaN(this.addPrice)){
+                        alert("숫자를 입력하세요.");
+                        return;
+                    }
+                    this.myArray.push({content:this.addText, price:this.addPrice});
+                    this.addText = '';
+                    this.addPrice = 0;
+                    document.getElementById('cont').focus();
+                },
+                removeList: function(idx){
+                    this.myArray.splice(idx,1);
+                }
+            }
+        })
+    </script>
+
+    
+
+</body>
+</html>

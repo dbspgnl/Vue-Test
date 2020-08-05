@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBoard</title>
+    <link rel="shortcut icon" type="image/x-icon" href="SO.PNG">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <my-board-list v-if="listOk" 
+            v-bind:json_data="items.data.board" 
+            v-on:board-write="boardWrite"
+            v-on:board-read="boardRead"
+            v-on:board-delete="boardDelete">
+        </my-board-list>
+        <my-board-write v-if="writeOk" 
+            v-on:board-save="boardSave"
+            v-on:board-list="boardList">
+        </my-board-write>
+        <my-board-read v-if="readOk" 
+            v-bind:json_data="boardInfo" 
+            v-bind:num="boardInfo.no"
+            v-on:board-list="boardList"  
+            v-on:board-delete="boardDelete">
+        </my-board-read>    
+        <hr>
+    </div>
+
+    <script>
+        Vue.component('my-board-list',{
+            props: ['json_data'],
+            template:`
+                <div>
+                    <p class="my-header-blue">게시판 목록</p>
+                    <div class="content">
+                        <table border="1">
+                            <tr>
+                                <th>번호</th>
+                                <th>제목</th>
+                                <th>조회수</th>
+                                <th>-</th>
+                            </tr>
+                            <tr v-for="(v, i) in json_data" v-bind:key="v.no">
+                                <td>{{v.no}}</td>
+                                <td v-on:click="boardRead(v)">{{v.title}}</td>
+                                <td>{{v.view}}</td>
+                                <td><button v-on:click="boardDelete(v.no)">삭제</button></td>
+                            </tr>
+                        </table>
+                        <p style="text-align: right;">
+                            <button v-on:click="">저장</button>
+                            <button v-on:click="boardWrite">작성</button>
+                        </p>
+                    </div>
+                </div>
+            `,
+            methods:{
+                boardWrite: function(){
+                    this.$emit('board-write');
+                },
+                boardRead: function(info){
+                    this.$emit('board-read', info);
+                },
+                boardDelete: function(no){
+                    this.$emit('board-delete', no);
+                }
+            }
+        });
+        Vue.component('my-board-write',{
+            template:`
+                <div>
+                    <p class="my-header-blue">게시판 글쓰기</p>
+                    <div class="content">
+                        <table border="1">
+                            <tr>
+                                <th style="width:30%">제목</th>
+                                <td><input type="text" v-model="title" style="width:94%"></td>
+                            </tr>
+                            <tr>
+                                <th>내용</th>
+                                <td>
+                                    <textarea name="" id="" cols="30" rows="10"></textarea>
+                                </td>
+                            </tr>
+                        </table>
+                        <p style="text-align: right;">
+                            <button v-on:click="boardSave">작성</button>
+                            <button v-on:click="boardList">목록</button>
+                        </p>
+                    </div>
+                </div>
+            `,
+            methods:{
+                boardSave: function(){
+                    this.$emit('board-save', this.title, this.content);
+                },
+                boardList: function(){
+                    this.$emit('board-list');
+                }
+            },
+            data: function(){
+                return{
+                    title:"",
+                    content:""
+                }
+            }
+        });
+        Vue.component('my-board-read',{
+            props: ['json_data', 'num'],
+            template:`
+                <div>
+                    <p class="my-header-blue">게시판 글보기</p>
+                    <div class="content">
+                        <table border="1">
+                            <tr>
+                                <th style="width:30%">제목</th>
+                                <td>{{json_data.title}}</td>
+                            </tr>
+                            <tr>
+                                <th>내용</th>
+                                <td>
+                                    <textarea cols="30" rows="10" readonly>{{json_data.content}}</textarea>
+                                </td>
+                            </tr>
+                        </table>
+                        <p style="text-align: right;">
+                            <button v-on:click="boardDelete(num)">삭제</button>
+                            <button v-on:click="boardList">목록</button>
+                        </p>
+                    </div>
+                </div>
+            `,
+            methods:{
+                boardList: function(){
+                    this.$emit('board-list');
+                },
+                boardDelete: function(no){
+                    this.$emit('board-delete', no);
+                }
+            }
+        });
+        new Vue({
+            el:'#app',
+            data: {
+                items:{},
+                listOk: true,
+                readOk: false,
+                writeOk: false,
+                boardInfo: {}
+            },
+            methods:{
+                boardSave: function(title, content){
+                    var no = 0;
+                    var lastNo = this.items.data['board'].length;
+                    if(this.items.data['board'].length!=0) no = lastNo+1
+                    var board_info = {
+                        no: no,
+                        title: title,
+                        content: content,
+                        view: "1"
+                    };
+                    this.items.data['board'].push(board_info);
+                    this.boardList();
+                },
+                boardList: function(){
+                    this.listOk = true;
+                    this.readOk = false;
+                    this.writeOk = false;
+                },
+                boardWrite: function(){
+                    this.listOk = false;
+                    this.readOk = false;
+                    this.writeOk = true;
+                },
+                boardRead: function(info){
+                    this.listOk = false;
+                    this.readOk = true;
+                    this.boardInfo = info;
+                    for(var i=0; i<this.items.data['board'].length; i++){
+                        if(this.items.data['board'][i].no == info.no) 
+                        this.items.data['board'][i].view = parseInt(this.items.data['board'][i].view)+1;
+                    }
+                },
+                boardDelete: function(no){
+                    for(var i=0; i<this.items.data['board'].length; i++){
+                        if(this.items.data['board'][i].no==no)
+                        this.items.data['board'].splice(i,1);
+                    }
+                    this.boardList();
+                },
+            },
+            mounted: function () {
+                axios.get("./board.json").then(response => (this.items = response))
+            }
+
+        })
+    </script>
+</body>
+</html>
