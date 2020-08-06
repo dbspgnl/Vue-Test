@@ -7,14 +7,21 @@
     <link rel="shortcut icon" type="image/x-icon" href="SO.png">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
     <div id="app">
-        <p class="my-header">총 지출금액: {{sum}}</p>
-        <input type="text" v-model.trim="addText" placeholder="내용" id="cont">
-        <input type="text" v-model.number="addPrice" v-on:keyup.enter="addList" placeholder="금액">
-        <button v-on:click="addList">추가</button>
-        <br><br>
+        <p class="my-header">총 지출금액: {{expense}}</p>
+        <p>
+            소득: <input type="text" v-model.number="income" v-on:keyup.enter="fixIncome" placeholder="50000">
+            <button v-on:click="fixIncome">수정</button>
+        </p>
+        <p>
+            지출: <input type="text" v-model.trim="addText" placeholder="내용" id="cont">
+            <input type="text" v-model.number="addPrice" v-on:keyup.enter="addList" placeholder="금액">
+            <button v-on:click="addList">추가</button>
+        </p>
+        <hr>
         <div v-for="(item, index) in myArray">
             <ul>
                 <li>내용은 {{item.content}}이고, 금액은 {{item.price}}입니다.
@@ -22,7 +29,36 @@
             </ul>
         </div>
     </div>
+    <hr>
+    <div id="barchart_material"></div>
+
     <script>
+
+        var orgdata = [
+            ['Year', 'Income', 'Expenses', 'Profit']
+        ];
+
+        google.charts.load('current', { 'packages': ['bar'] });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable(orgdata);
+
+            var options = {
+                chart: {
+                    title: 'My account book',
+                    subtitle: 'income, Expenses, and Profit',
+                },
+                bars: 'horizontal', // Required for Material Bar Charts.
+                width: 700,
+                height: 200
+            };
+
+            var chart = new google.charts.Bar(document.getElementById('barchart_material'));
+
+            chart.draw(data, google.charts.Bar.convertOptions(options));
+        }
+        //----------------------------------------------------------------------
         var app = new Vue({
             el: '#app',
             data: {
@@ -42,15 +78,21 @@
                         "content":"당근1개",
                         "price":450
                     },
-                ]
+                ],
+                chartArray:orgdata,
+                income: 50000,
+
             },
             computed:{
-                sum: function(){
+                expense: function(){
                     var s = 0;
                     for(var i=0; i<this.myArray.length; i++){
                         s += this.myArray[i].price;
                     }
                     return s;
+                },
+                profit: function(){
+                    return this.income-this.expense;
                 }
             },
             methods:{
@@ -63,15 +105,29 @@
                     this.addText = '';
                     this.addPrice = 0;
                     document.getElementById('cont').focus();
+
+                    this.chartRefresh();
+                    
                 },
                 removeList: function(idx){
                     this.myArray.splice(idx,1);
+                },
+                fixIncome: function(){
+                    this.chartRefresh();
+                },
+                chartRefresh: function(){
+                    //초기화
+                     this.chartArray.splice(1,1);
+                    //차트 그리기
+                    var ch = ['이번달', this.income, this.expense, this.profit];
+                    this.chartArray.push(ch);
+                    drawChart();
+                    document.getElementById('barchart_material').style.display = "block";
                 }
             }
         })
-    </script>
 
-    
+    </script>
 
 </body>
 </html>

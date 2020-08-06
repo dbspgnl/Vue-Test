@@ -50,7 +50,7 @@ select {
 }
 /*추가*/
 .my-header{
-    background-color: cadetblue;
+    background-color: steelblue;
     text-align: center; 
     font-size: 3em;
 }
@@ -71,4 +71,10 @@ table{
 tr>td:nth-child(1),tr>td:nth-child(3),tr>td:nth-child(4){
     width: 10%;
     text-align: center;
+}
+th{
+    min-width: 50px;
+}
+#barchart_material{
+    display: none;
 }

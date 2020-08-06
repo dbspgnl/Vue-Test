@@ -15,7 +15,8 @@
             v-bind:json_data="items.data.board" 
             v-on:board-write="boardWrite"
             v-on:board-read="boardRead"
-            v-on:board-delete="boardDelete">
+            v-on:board-delete="boardDelete"
+            v-on:save-board-list="saveBoardList">
         </my-board-list>
         <my-board-write v-if="writeOk" 
             v-on:board-save="boardSave"
@@ -28,6 +29,7 @@
             v-on:board-delete="boardDelete">
         </my-board-read>    
         <hr>
+        
     </div>
 
     <script>
@@ -52,7 +54,7 @@
                             </tr>
                         </table>
                         <p style="text-align: right;">
-                            <button v-on:click="">저장</button>
+                            <button v-on:click="saveBoardList">저장</button>
                             <button v-on:click="boardWrite">작성</button>
                         </p>
                     </div>
@@ -67,6 +69,9 @@
                 },
                 boardDelete: function(no){
                     this.$emit('board-delete', no);
+                },
+                saveBoardList: function(){
+                    this.$emit('save-board-list');
                 }
             }
         });
@@ -192,9 +197,37 @@
                     }
                     this.boardList();
                 },
+                saveBoardList: function(){
+                    var data = this.items.data; 
+                    delete data.length;
+                    console.log(data);
+                    if(data.length=0){
+                        alert("저장할 게시판 내용이 없습니다.")
+                        return;
+                    }
+
+                    var filename = 'board.json';
+                    if(typeof data === "object"){ //데이터가 객체일 경우
+                        data = JSON.stringify(data, undefined, 4);
+                        //stringify(대상, 필터링, 내어쓰기칸)
+                    }
+                    console.log(data);
+                    
+                    var blob = new Blob([data], {type: 'text/json'}),
+                    //Blob(배열, 옵션) : data배열 사용, 타입은 text/json으로
+                        e    = document.createEvent('MouseEvent'), //마우스 이벤트
+                        a    = document.createElement('a'); //엘리먼트 생성 
+                    console.log(blob);
+                    a.download = filename; //다운로드 엘리먼트 생성 후 파일이름을 다음과 같이
+                    a.href = window.URL.createObjectURL(blob); //파일에 URL을 부여해준다.
+                    console.log(blob);
+                    a.dataset.downloadUrl = ['text/json', a.download, a.href].join(':');
+                    e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                    a.dispatchEvent(e);
+                },
             },
             mounted: function () {
-                axios.get("./board.json").then(response => (this.items = response))
+                axios.get("./board.json").then(response => (this.items = response));
             }
 
         })
