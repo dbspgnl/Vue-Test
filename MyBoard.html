@@ -11,25 +11,26 @@
 </head>
 <body>
     <div id="app">
-        <my-board-list v-if="listOk" 
-            v-bind:json_data="items.data.board" 
-            v-on:board-write="boardWrite"
-            v-on:board-read="boardRead"
-            v-on:board-delete="boardDelete"
-            v-on:save-board-list="saveBoardList">
-        </my-board-list>
-        <my-board-write v-if="writeOk" 
-            v-on:board-save="boardSave"
-            v-on:board-list="boardList">
-        </my-board-write>
-        <my-board-read v-if="readOk" 
-            v-bind:json_data="boardInfo" 
-            v-bind:num="boardInfo.no"
-            v-on:board-list="boardList"  
-            v-on:board-delete="boardDelete">
-        </my-board-read>    
-        <hr>
-        
+        <div v-if="items.data">
+            <my-board-list v-if="listOk" 
+                v-bind:json_data="items.data.board" 
+                v-on:board-write="boardWrite"
+                v-on:board-read="boardRead"
+                v-on:board-delete="boardDelete"
+                v-on:save-board-list="saveBoardList">
+            </my-board-list>
+            <my-board-write v-if="writeOk" 
+                v-on:board-save="boardSave"
+                v-on:board-list="boardList">
+            </my-board-write>
+            <my-board-read v-if="readOk" 
+                v-bind:json_data="boardInfo" 
+                v-bind:num="boardInfo.no"
+                v-on:board-list="boardList"  
+                v-on:board-delete="boardDelete">
+            </my-board-read>    
+            <hr>
+        </div>
     </div>
 
     <script>
